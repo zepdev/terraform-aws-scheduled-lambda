@@ -48,12 +48,14 @@ resource "aws_lambda_function" "function" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_logging" {
+  count             = local.enabled_count
   name              = "/aws/lambda/${var.name}"
   retention_in_days = 14
 }
 
 # See also the following AWS managed policy: AWSLambdaBasicExecutionRole
 resource "aws_iam_policy" "lambda_logging" {
+  count       = local.enabled_count
   name        = "${var.name}-lambda_logging"
   path        = "/"
   description = "IAM policy for logging from a lambda"
@@ -76,6 +78,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role = "${aws_iam_role.lambdaRole.name}"
-  policy_arn = "${aws_iam_policy.lambda_logging.arn}"
+  count = local.enabled_count
+  role = "${aws_iam_role.lambdaRole[0].name}"
+  policy_arn = "${aws_iam_policy.lambda_logging[0].arn}"
 }
